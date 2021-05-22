@@ -1,0 +1,4 @@
+{
+  "jwtPrivateKey": "bookazon_jwtPrivateKey",
+  "db": "bookazon_db"
+}

@@ -25,10 +25,10 @@ const bookSchema = new mongoose.Schema({
     max: 10000,
     required: true,
   },
-  authorId: {
+  authors: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Author",
-  },
+  }],
   sellerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -43,7 +43,7 @@ function validateBook(book) {
     genreId: Joi.string().required(),
     quantity: Joi.number().required(),
     unitPrice: Joi.number().required(),
-    authorName: Joi.string().min(3).max(255).required(),
+    authors: Joi.array().items(Joi.string().min(3).max(255).required())
   });
 
   return schema.validate(book);

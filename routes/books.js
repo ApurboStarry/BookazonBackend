@@ -66,11 +66,10 @@ router.get("/getBook/:id", async (req, res) => {
   return res.send({
     _id: book._id,
     name: book.name,
-    genre: book.genreId.name,
-    quantity: book.quantity,
     unitPrice: book.unitPrice,
+    genre: book.genreId.name,
+    seller: book.sellerId.username,
     authors: book.authors,
-    seller: book.sellerId.username
   });
 });
 

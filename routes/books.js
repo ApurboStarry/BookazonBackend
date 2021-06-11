@@ -46,6 +46,42 @@ router.get("/", async (req, res) => {
   res.send(books);
 })
 
+router.get("/sortBy/name", async (req, res) => {
+  const state = req.query.order === "ascending" ? 1 : -1;
+  const books = await Book.find()
+    .populate("authors", "name")
+    .populate("genreId", "name")
+    .populate("sellerId", "_id username")
+    .sort({ name: state })
+    .limit(10);
+
+  res.send(books);
+});
+
+router.get("/sortBy/unitPrice", async (req, res) => {
+  const state = req.query.order === "ascending" ? 1 : -1;
+  const books = await Book.find()
+    .populate("authors", "name")
+    .populate("genreId", "name")
+    .populate("sellerId", "_id username")
+    .sort({ unitPrice: state })
+    .limit(10);
+
+  res.send(books);
+});
+
+router.get("/sortBy/genre", async (req, res) => {
+  const state = req.query.order === "ascending" ? 1 : -1;
+  const books = await Book.find()
+    .populate("authors", "name")
+    .populate("genreId", "name")
+    .populate("sellerId", "_id username")
+    .sort({ unitPrice: state })
+    .limit(10);
+
+  res.send(books);
+});
+
 router.get("/numberOfPages", async (req, res) => {
   const numberOfPages = await getNumberOfPages();
 

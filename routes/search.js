@@ -5,7 +5,8 @@ const { Book } = require("../models/book");
 const router = express.Router();
 
 router.get("/byName/:name", async (req, res) => {
-  const books = await Book.find({ name: req.params.name });
+  // const regExp = new RegExp(".*")
+  const books = await Book.find({ name: { $regex: req.params.name, $options: "i" } });
   res.send(books);
 });
 

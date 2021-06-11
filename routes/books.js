@@ -74,9 +74,9 @@ router.get("/sortBy/genre", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
   const books = await Book.find()
     .populate("authors", "name")
-    .populate("genreId", "name")
+    .populate("genreId", "name -_id")
     .populate("sellerId", "_id username")
-    .sort({ unitPrice: state })
+    .sort({ genreId: state })
     .limit(10);
 
   res.send(books);

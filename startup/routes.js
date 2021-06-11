@@ -7,6 +7,7 @@ const authors = require("../routes/authors");
 const books = require("../routes/books");
 const search = require("../routes/search");
 const buy = require("../routes/buy");
+const cart = require("../routes/cart");
 
 const error = require("../middlewares/error");
 
@@ -24,6 +25,7 @@ module.exports = function (app) {
   app.use("/api/v1/books", books);
   app.use("/api/v1/search", search);
   app.use("/api/v1/buy", buy);
+  app.use("/api/v1/cart", cart);
 
   app.use(error);
 };

@@ -102,10 +102,11 @@ router.get("/getBook/:id", async (req, res) => {
   return res.send({
     _id: book._id,
     name: book.name,
-    unitPrice: book.unitPrice,
-    genre: book.genreId.name,
-    seller: book.sellerId.username,
     authors: book.authors,
+    genre: book.genreId.name,
+    unitPrice: book.unitPrice,
+    quantity: book.quantity,
+    seller: book.sellerId.username,
   });
 });
 

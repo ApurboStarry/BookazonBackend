@@ -1,9 +1,9 @@
 const express = require("express");
 const auth = require("../middlewares/auth");
 
-const {Book} = require("../models/book");
-const {Cart} = require("../models/cart");
-const {BooksInCart, validate} = require("../models/booksInCart");
+const { Book } = require("../models/book");
+const { Cart } = require("../models/cart");
+const { BooksInCart, validate } = require("../models/booksInCart");
 
 const router = express.Router();
 
@@ -12,7 +12,13 @@ function isValidObjectId(objectId) {
 }
 
 router.get("/allBooks", auth, async (req, res) => {
-  const cart = await Cart.findOne({ ownerId: req.user._id }).populate("books");
+  const cart = await Cart.findOne({ ownerId: req.user._id })
+    .populate({
+      path: "books",
+      populate: {
+        path: "bookId"
+      }
+    });
   return res.send(cart);
 });
 
@@ -22,7 +28,7 @@ router.post("/addBook", auth, async (req, res) => {
 
   // check if the provided bookId(req.body.bookId) really exists
   const book = await Book.findOne({ _id: req.body.bookId });
-  if(!book) {
+  if (!book) {
     return res.status(400).send("No book with the given ID was found");
   }
 
@@ -31,7 +37,7 @@ router.post("/addBook", auth, async (req, res) => {
     bookId: req.body.bookId,
     quantity: req.body.quantity,
     unitPrice: req.body.unitPrice,
-    totalAmount: req.body.quantity * req.body.unitPrice
+    totalAmount: req.body.quantity * req.body.unitPrice,
   });
 
   booksInCart = await booksInCart.save();
@@ -40,12 +46,12 @@ router.post("/addBook", auth, async (req, res) => {
   let cart = await Cart.findOne({ ownerId: req.user._id });
 
   // if the user has no cart yet, create one
-  if(!cart) {
+  if (!cart) {
     const books = [];
     books.push(booksInCart._id);
     cart = new Cart({
       books,
-      ownerId: req.user._id
+      ownerId: req.user._id,
     });
 
     cart = await cart.save();
@@ -69,18 +75,21 @@ router.put("/updateQuantity/:booksInCartId", auth, async (req, res) => {
   const isValidId = isValidObjectId(req.params.booksInCartId);
   if (!isValidId) return res.status(400).send("Invalid ID");
 
-  if(req.body.quantity < 1 || req.body.quantity > 200) {
+  if (req.body.quantity < 1 || req.body.quantity > 200) {
     return res.status(400).send("Quantity too small or too large");
   }
 
   let bookInCart = await BooksInCart.findOne({ _id: req.params.booksInCartId });
-  if(!bookInCart) {
+  if (!bookInCart) {
     return res.status(400).send("Book doesn't exist in cart");
   }
 
   bookInCart = await BooksInCart.findOneAndUpdate(
     { _id: req.params.booksInCartId },
-    { quantity: req.body.quantity, totalAmount: req.body.quantity * bookInCart.unitPrice },
+    {
+      quantity: req.body.quantity,
+      totalAmount: req.body.quantity * bookInCart.unitPrice,
+    },
     { new: true }
   );
 
@@ -95,23 +104,21 @@ router.delete("/deleteBook/:bookInCartId", auth, async (req, res) => {
   // retrieve the cart associated to the user first
   let cart = await Cart.findOne({ ownerId: req.user._id });
 
-  if(!cart) {
+  if (!cart) {
     return res.status(400).send("Book doesn't exist in the cart");
   }
 
   const books = cart.books;
   const index = books.indexOf(req.params.bookInCartId);
-  if(index > -1) {
+  if (index > -1) {
     books.splice(index, 1);
   }
 
-  console.log("Updated booksInCart list in cart:", books);
   cart = await Cart.findOneAndUpdate(
     { ownerId: req.user._id },
     { books: books },
     { new: true }
   );
-  console.log("updated cart", cart);
 
   await BooksInCart.findByIdAndDelete(req.params.bookInCartId);
 

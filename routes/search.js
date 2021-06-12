@@ -48,7 +48,6 @@ async function getAuthorIds(authorName) {
 
 router.post("/advancedSearch", async (req, res) => {
   const authorIds = await getAuthorIds(req.body.author);
-  console.log(authorIds);
 
   if(req.body.minPrice < 0) {
     req.body.minPrice = 0;

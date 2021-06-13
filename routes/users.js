@@ -2,6 +2,12 @@ const { User, validate } = require("../models/user");
 const bcrypt = require("bcrypt");
 const express = require("express");
 const router = express.Router();
+const auth = require("../middlewares/auth");
+
+router.get("/", auth, async (req, res) => {
+  const user = await User.findOne({ _id: req.user._id });
+  return res.send({ email: user.email, username: user.username });
+})
 
 // for registering users
 router.post("/", async (req, res) => {

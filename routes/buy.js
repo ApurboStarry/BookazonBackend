@@ -25,6 +25,18 @@ async function decreaseQuantityOfSoldBooks(userId) {
   }
 }
 
+router.get("/transactionHistory", auth, async (req, res) => {
+  const transactions = await Transaction.find({
+    buyerId: req.user._id,
+  }).populate({
+    path: "books",
+    populate: {
+      path: "bookId",
+    },
+  });
+  return res.send(transactions);
+});
+
 router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);

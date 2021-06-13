@@ -1,9 +1,10 @@
 const express = require("express");
+const auth = require("../middlewares/auth");
 
 const { Transaction, validate, validateTransactionForUpdation } = require("../models/transaction");
+const { Cart } = require("../models/cart");
+const { BooksInCart } = require("../models/booksInCart");
 const { Book } = require("../models/book");
-
-const auth = require("../middlewares/auth");
 
 const router = express.Router();
 
@@ -11,40 +12,43 @@ function isValidObjectId(objectId) {
   return objectId.match(/^[0-9a-fA-F]{24}$/);
 }
 
-router.post("/", auth, async (req, res) => {
-  const isValidId = isValidObjectId(req.body.bookId);
-  if (!isValidId) return res.status(400).send("Invalid ID");
+async function decreaseQuantityOfSoldBooks(userId) {
+  const cart = await Cart.findOne({ ownerId: userId });
+  for(let i = 0; i < cart.books.length; i++) {
+    const booksInCart = await BooksInCart.findOne({ _id: cart.books[i] });
+    let book = await Book.findOne({ _id: booksInCart.bookId });
+    book = await Book.findOneAndUpdate(
+      { _id: booksInCart.bookId },
+      { quantity: book.quantity - booksInCart.quantity },
+      { new: true }
+    )
+  }
+}
 
+router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  let book = await Book.findOne({ _id: req.body.bookId });
-  if(book.quantity <= 0) {
-    return res.status(400).send("Book doesn't exist");
+  const cart = await Cart.findOne({ ownerId: req.user._id });
+  if(!cart) {
+    return res.status(400).send("No items in cart");
   }
 
-  await Book.findOneAndUpdate(
-    {
-      _id: req.body.bookId
-    },
-    {
-      quantity: book.quantity - 1
-    }
-  );
-
   let transaction = new Transaction({
-    bookId: req.body.bookId,
+    books: cart.books,
+    totalAmount: req.body.totalAmount,
+    paymentMethod: req.body.paymentMethod,
+    deliveryType: req.body.deliveryType,
     buyerId: req.user._id,
-    quantity: req.body.quantity,
-    unitPrice: req.body.unitPrice,
-    totalAmount: req.body.quantity * req.body.unitPrice,
     transactionDate: Date.now(),
     transactionRating: 0
   });
 
   transaction = await transaction.save();
+  await decreaseQuantityOfSoldBooks(req.user._id);
+  await Cart.findOneAndDelete({ ownerId: req.user._id });
 
-  res.send({ _id: transaction._id, totalAmount: transaction.totalAmount });
+  return res.send({ _id: transaction._id, totalAmount: transaction.totalAmount });
 });
 
 router.put("/rate/:transactionId", auth, async (req, res) => {

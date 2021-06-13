@@ -3,49 +3,42 @@ Joi.objectId = require("joi-objectid");
 const mongoose = require("mongoose");
 
 const transactionSchema = new mongoose.Schema({
-  bookId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Book",
+  books: [{ type: mongoose.Schema.Types.ObjectId, ref: "BooksInCart" }],
+  totalAmount: {
+    type: Number,
+    min: 1,
+    required: true,
+  },
+  paymentMethod: {
+    type: String,
+    required: true
+  },
+  deliveryType: {
+    type: String,
+    required: true
   },
   buyerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-  quantity: {
-    type: Number,
-    min: 1,
-    max: 200,
-    required: true,
-  },
-  unitPrice: {
-    type: Number,
-    min: 1,
-    max: 10000,
-    required: true,
-  },
-  totalAmount: {
-    type: Number,
-    min: 1,
-    required: true
-  },
   transactionDate: {
     type: Date,
-    required: true
+    required: true,
   },
   transactionRating: {
     type: Number,
     min: 0,
-    max: 5
-  }
+    max: 5,
+  },
 });
 
 const Transaction = mongoose.model("Transaction", transactionSchema);
 
 function validateTransaction(transaction) {
   const schema = Joi.object({
-    bookId: Joi.string().required(),
-    quantity: Joi.number().min(1).max(200).required(),
-    unitPrice: Joi.number().min(1).max(10000).required(),
+    totalAmount: Joi.number().min(1).required(),
+    paymentMethod: Joi.string().required(),
+    deliveryType: Joi.string().required()
   });
 
   return schema.validate(transaction);

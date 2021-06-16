@@ -64,12 +64,19 @@ router.post("/advancedSearch", async (req, res) => {
   books = books.filter((book) => {
     return (
       book.name.match(new RegExp(req.body.name, "i")) &&
-      // book.authors.includes({name: req.body.author}, 0) &&
       book.genreId.name.match(new RegExp(req.body.genre, "i")) && 
       book.unitPrice >= req.body.minPrice &&
       book.unitPrice <= req.body.maxPrice
     );
   });
+
+  if(req.body.tags.length >= 1 && req.body.tags[0].length >= 1) {
+    console.log('Here');
+    for (let i = 0; i < req.body.tags.length; i++) {
+      books = books.filter((book) => book.tags.includes(req.body.tags[i]));
+    }
+  }
+
   return res.send(books);
 });
 

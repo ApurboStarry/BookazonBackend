@@ -33,6 +33,11 @@ const bookSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
+  tags: [{
+    type: String,
+    min: 3,
+    max: 255
+  }]
 });
 
 const Book = mongoose.model("Book", bookSchema);
@@ -43,7 +48,8 @@ function validateBook(book) {
     genreId: Joi.string().required(),
     quantity: Joi.number().required(),
     unitPrice: Joi.number().required(),
-    authors: Joi.array().items(Joi.string().min(3).max(255).required())
+    authors: Joi.array().items(Joi.string().min(3).max(255).required()),
+    tags: Joi.array().items(Joi.string().min(3).max(255))
   });
 
   return schema.validate(book);

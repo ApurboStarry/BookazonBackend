@@ -110,6 +110,15 @@ router.get("/getBook/:id", async (req, res) => {
   });
 });
 
+function formatTags(tags) {
+  const formattedTags = [];
+  for(let i = 0; i < tags.length; i++) {
+    formattedTags.push(tags[i].toLowerCase());
+  }
+
+  return formattedTags;
+}
+
 router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -129,13 +138,16 @@ router.post("/", auth, async (req, res) => {
     bookAuthors.push(authorId);
   }
 
+  const formattedTags = formatTags(req.body.tags);
+
   book = new Book({
     name: req.body.name,
     genreId: req.body.genreId,
     quantity: req.body.quantity,
     unitPrice: req.body.unitPrice,
     authors: bookAuthors,
-    sellerId: req.user._id
+    sellerId: req.user._id,
+    tags: formattedTags
   });
 
   book = await book.save();

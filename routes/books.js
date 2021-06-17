@@ -38,7 +38,7 @@ router.get("/", async (req, res) => {
 
   const books = await Book.find()
     .populate("authors", "name")
-    .populate("genreId", "name")
+    .populate("genres", "_id name")
     .populate("sellerId", "_id username")
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
@@ -50,7 +50,7 @@ router.get("/sortBy/name", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
   const books = await Book.find()
     .populate("authors", "name")
-    .populate("genreId", "name")
+    .populate("genres", "_id name")
     .populate("sellerId", "_id username")
     .sort({ name: state })
     .limit(10);
@@ -62,7 +62,7 @@ router.get("/sortBy/unitPrice", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
   const books = await Book.find()
     .populate("authors", "name")
-    .populate("genreId", "name")
+    .populate("genres", "_id name")
     .populate("sellerId", "_id username")
     .sort({ unitPrice: state })
     .limit(10);
@@ -74,9 +74,9 @@ router.get("/sortBy/genre", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
   const books = await Book.find()
     .populate("authors", "name")
-    .populate("genreId", "name -_id")
+    .populate("genres", "name -_id")
     .populate("sellerId", "_id username")
-    .sort({ genreId: state })
+    .sort({ genres: state })
     .limit(10);
 
   res.send(books);
@@ -93,7 +93,8 @@ router.get("/getBook/:id", async (req, res) => {
   if (!isValidId) return res.status(400).send("Invalid ID");
 
   const book = await Book.findOne({ _id: req.params.id })
-    .populate("genreId sellerId authors");
+    .populate("genres", "_id name")
+    .populate("sellerId authors");
 
   if (!book) {
     return res.status(404).send("No book with the given ID was found");
@@ -103,7 +104,7 @@ router.get("/getBook/:id", async (req, res) => {
     _id: book._id,
     name: book.name,
     authors: book.authors,
-    genre: book.genreId.name,
+    genres: book.genres,
     unitPrice: book.unitPrice,
     quantity: book.quantity,
     seller: book.sellerId.username,
@@ -142,7 +143,7 @@ router.post("/", auth, async (req, res) => {
 
   book = new Book({
     name: req.body.name,
-    genreId: req.body.genreId,
+    genres: req.body.genres,
     quantity: req.body.quantity,
     unitPrice: req.body.unitPrice,
     authors: bookAuthors,

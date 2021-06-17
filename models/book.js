@@ -9,10 +9,10 @@ const bookSchema = new mongoose.Schema({
     max: 255,
     required: true,
   },
-  genreId: {
+  genres: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Genre",
-  },
+  }],
   quantity: {
     type: Number,
     min: 1,
@@ -45,11 +45,11 @@ const Book = mongoose.model("Book", bookSchema);
 function validateBook(book) {
   const schema = Joi.object({
     name: Joi.string().required(),
-    genreId: Joi.string().required(),
+    genres: Joi.array().items(Joi.string().required()),
     quantity: Joi.number().required(),
     unitPrice: Joi.number().required(),
     authors: Joi.array().items(Joi.string().min(3).max(255).required()),
-    tags: Joi.array().items(Joi.string().min(3).max(255))
+    tags: Joi.array().items(Joi.string().min(3).max(255)),
   });
 
   return schema.validate(book);

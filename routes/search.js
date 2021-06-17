@@ -13,8 +13,8 @@ router.get("/byName/:name", async (req, res) => {
 });
 
 router.get("/byGenre/:genreId", async (req, res) => {
-  const books = await Book.find({ genreId: req.params.genreId })
-    .populate("genreId", "name")
+  const books = await Book.find({ genres: { $in: [req.params.genreId] } })
+    .populate("genres", "_id name")
     .limit(10);
   res.send(books);
 });
@@ -29,7 +29,7 @@ router.get("/byAuthor/:authorId", async (req, res) => {
 
   const books = await Book.find({ authors: req.params.authorId })
     .populate("authorId", "name")
-    .populate("genreId", "name");
+    .populate("genres", "_id name");
   res.send(books);
 });
 
@@ -58,20 +58,23 @@ router.post("/advancedSearch", async (req, res) => {
 
   let books = await Book.find({ authors: { $in: authorIds } })
     .populate("authors", "name -_id")
-    .populate("genreId", "name")
     .populate("sellerId", "_id username");
 
   books = books.filter((book) => {
     return (
       book.name.match(new RegExp(req.body.name, "i")) &&
-      book.genreId.name.match(new RegExp(req.body.genre, "i")) && 
       book.unitPrice >= req.body.minPrice &&
       book.unitPrice <= req.body.maxPrice
     );
   });
 
+  for(let i = 0; i < req.body.genres.length; i++) {
+    if(req.body.genres[i] !== "") {
+      books = books.filter(book => book.genres.includes(req.body.genres[i]));
+    }
+  }
+
   if(req.body.tags.length >= 1 && req.body.tags[0].length >= 1) {
-    console.log('Here');
     for (let i = 0; i < req.body.tags.length; i++) {
       books = books.filter((book) => book.tags.includes(req.body.tags[i]));
     }

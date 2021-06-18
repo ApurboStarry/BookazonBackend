@@ -15,6 +15,8 @@ function isValidObjectId(objectId) {
 
 async function getNumberOfPages() {
   const numberOfBooks = await Book.countDocuments();
+
+  if(numberOfBooks % pageSize === 0) return numberOfBooks / pageSize;
   const numberOfPages = Math.floor(numberOfBooks / pageSize) + 1;
 
   return numberOfPages;

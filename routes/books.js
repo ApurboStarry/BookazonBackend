@@ -16,7 +16,7 @@ function isValidObjectId(objectId) {
 async function getNumberOfPages() {
   const numberOfBooks = await Book.countDocuments();
 
-  if(numberOfBooks % pageSize === 0) return numberOfBooks / pageSize;
+  if (numberOfBooks % pageSize === 0) return numberOfBooks / pageSize;
   const numberOfPages = Math.floor(numberOfBooks / pageSize) + 1;
 
   return numberOfPages;
@@ -34,7 +34,7 @@ async function getNumberOfPages() {
 router.get("/", async (req, res) => {
   const pageNumber = req.query.pageNumber;
   const numberOfPages = await getNumberOfPages();
-  if(!pageNumber || pageNumber < 1 || pageNumber > numberOfPages) {
+  if (!pageNumber || pageNumber < 1 || pageNumber > numberOfPages) {
     return res.status(400).send("Invalid page number");
   }
 
@@ -46,7 +46,7 @@ router.get("/", async (req, res) => {
     .limit(pageSize);
 
   res.send(books);
-})
+});
 
 router.get("/sortBy/name", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
@@ -84,11 +84,55 @@ router.get("/sortBy/genre", async (req, res) => {
   res.send(books);
 });
 
+function distanceFrom(location1, location2) {
+  let lat1 = location1.latitude;
+  let lon1 = location1.longitude;
+
+  let lat2 = location2.latitude;
+  let lon2 = location2.longitude;
+
+  lon1 = (lon1 * Math.PI) / 180;
+  lon2 = (lon2 * Math.PI) / 180;
+  lat1 = (lat1 * Math.PI) / 180;
+  lat2 = (lat2 * Math.PI) / 180;
+
+  // Haversine formula
+  let dlon = lon2 - lon1;
+  let dlat = lat2 - lat1;
+  let a =
+    Math.pow(Math.sin(dlat / 2), 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon / 2), 2);
+
+  let c = 2 * Math.asin(Math.sqrt(a));
+
+  // Radius of earth in kilometers. Use 3956
+  // for miles
+  let r = 6371;
+
+  // calculate the result
+  return c * r;
+}
+
+router.get("/sortBy/location", async (req, res) => {
+  const searchLocation = {
+    latitude: req.query.latitude,
+    longitude: req.query.longitude,
+  };
+
+  let books = await Book.find();
+  books = books.sort(
+    (book1, book2) =>
+      distanceFrom(book1.location, searchLocation) -
+      distanceFrom(book2.location, searchLocation)
+  );
+  return res.send(books);
+});
+
 router.get("/numberOfPages", async (req, res) => {
   const numberOfPages = await getNumberOfPages();
 
   res.send(numberOfPages.toString());
-})
+});
 
 router.get("/getBook/:id", async (req, res) => {
   const isValidId = isValidObjectId(req.params.id);
@@ -115,7 +159,7 @@ router.get("/getBook/:id", async (req, res) => {
 
 function formatTags(tags) {
   const formattedTags = [];
-  for(let i = 0; i < tags.length; i++) {
+  for (let i = 0; i < tags.length; i++) {
     formattedTags.push(tags[i].toLowerCase());
   }
 
@@ -127,13 +171,17 @@ router.post("/", auth, async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   let book = await Book.find({ name: req.body.name, sellerId: req.user._id });
-  
-  if(book.length > 0) {
-    return res.status(400).send("A book with the given name already exists. Try updating the existing book");
+
+  if (book.length > 0) {
+    return res
+      .status(400)
+      .send(
+        "A book with the given name already exists. Try updating the existing book"
+      );
   }
 
   const bookAuthors = [];
-  for(let i = 0; i < req.body.authors.length; i++) {
+  for (let i = 0; i < req.body.authors.length; i++) {
     // if authorName is already in the database, just returns the _id of the author
     // otherwise creates a new author with "authorName" and returns the _id
     const authorId = await authorService.getAuthorId(req.body.authors[i]);
@@ -151,7 +199,7 @@ router.post("/", auth, async (req, res) => {
     authors: bookAuthors,
     sellerId: req.user._id,
     tags: formattedTags,
-    location: req.body.location
+    location: req.body.location,
   });
 
   book = await book.save();
@@ -172,7 +220,7 @@ router.put("/:id", auth, async (req, res) => {
     },
     {
       quantity: req.body.quantity,
-      unitPrice: req.body.unitPrice
+      unitPrice: req.body.unitPrice,
     },
     {
       new: true,
@@ -184,7 +232,7 @@ router.put("/:id", auth, async (req, res) => {
 
   res.send({
     _id: book._id,
-    name: book.name
+    name: book.name,
   });
 });
 
@@ -193,7 +241,7 @@ router.delete("/:id", auth, async (req, res) => {
   if (!isValidId) return res.status(400).send("Invalid ID");
 
   let book = await Book.findOne({
-    _id: req.params.id
+    _id: req.params.id,
   });
   if (!book) {
     return res.status(400).send("No book with the given ID was found");
@@ -202,7 +250,7 @@ router.delete("/:id", auth, async (req, res) => {
   book = await Book.findOneAndRemove({ _id: req.params.id });
   res.send({
     _id: book._id,
-    name: book.name
+    name: book.name,
   });
 });
 

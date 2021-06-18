@@ -2,6 +2,21 @@ const Joi = require("joi");
 Joi.objectId = require("joi-objectid");
 const mongoose = require("mongoose");
 
+const locationSchema = new mongoose.Schema({
+  latitude: {
+    type: Number,
+    min: -90,
+    max: 90,
+    required: true,
+  },
+  longitude: {
+    type: Number,
+    min: -180,
+    max: 180,
+    required: true,
+  },
+});
+
 const bookSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -9,10 +24,12 @@ const bookSchema = new mongoose.Schema({
     max: 255,
     required: true,
   },
-  genres: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Genre",
-  }],
+  genres: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Genre",
+    },
+  ],
   quantity: {
     type: Number,
     min: 1,
@@ -25,24 +42,34 @@ const bookSchema = new mongoose.Schema({
     max: 10000,
     required: true,
   },
-  authors: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Author",
-  }],
+  authors: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Author",
+    },
+  ],
   sellerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-  tags: [{
-    type: String,
-    min: 3,
-    max: 255
-  }]
+  tags: [
+    {
+      type: String,
+      min: 3,
+      max: 255,
+    },
+  ],
+  location: locationSchema
 });
 
 const Book = mongoose.model("Book", bookSchema);
 
 function validateBook(book) {
+  const locationSchema = Joi.object().keys({
+    latitude: Joi.number().min(-90).max(90).required(),
+    longitude: Joi.number().min(-180).max(180).required(),
+  });
+
   const schema = Joi.object({
     name: Joi.string().required(),
     genres: Joi.array().items(Joi.string().required()),
@@ -50,6 +77,7 @@ function validateBook(book) {
     unitPrice: Joi.number().required(),
     authors: Joi.array().items(Joi.string().min(3).max(255).required()),
     tags: Joi.array().items(Joi.string().min(3).max(255)),
+    location: locationSchema,
   });
 
   return schema.validate(book);

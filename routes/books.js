@@ -148,7 +148,8 @@ router.post("/", auth, async (req, res) => {
     unitPrice: req.body.unitPrice,
     authors: bookAuthors,
     sellerId: req.user._id,
-    tags: formattedTags
+    tags: formattedTags,
+    location: req.body.location
   });
 
   book = await book.save();

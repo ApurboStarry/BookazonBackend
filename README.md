@@ -6,7 +6,8 @@
 |:---------:|:-------:|:------------:|:-----------:|
 |GET   |  /api/v1/genres     | get all genres | - |
 |GET   |  /api/v1/genres/:id | get a genre with a specific id | - |
-|POST  |  /api/v1/genres     | create a new genre | { "name": "Novel" } |
+|POST  |  /api/v1/genres     | create a new genre | { "name": "Textbooks" } |
+|POST  |  /api/v1/genres/:parentId     | add a subgenre to parent genre | { "name": "Computer Science" } |
 |PUT   |  /api/v1/genres/:id | update an existing genre | { "name": "Educational" } |
 |DELETE|  /api/v1/genres/:id | update an existing genre | - |
 

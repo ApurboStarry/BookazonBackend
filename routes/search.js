@@ -8,13 +8,16 @@ router.get("/byName/:name", async (req, res) => {
   // const regExp = new RegExp(".*")
   const books = await Book.find({
     name: { $regex: req.params.name, $options: "i" },
-  });
+  })
+    .populate("authors", "name _id")
+    .populate("genres", "_id name");
   res.send(books);
 });
 
 router.get("/byGenre/:genreId", async (req, res) => {
   const books = await Book.find({ genres: { $in: [req.params.genreId] } })
     .populate("genres", "_id name")
+    .populate("authors", "name -_id")
     .limit(10);
   res.send(books);
 });
@@ -28,7 +31,7 @@ router.get("/byAuthor/:authorId", async (req, res) => {
   if (!isValidId) return res.status(400).send("Invalid ID");
 
   const books = await Book.find({ authors: req.params.authorId })
-    .populate("authorId", "name")
+    .populate("authors", "name")
     .populate("genres", "_id name");
   res.send(books);
 });

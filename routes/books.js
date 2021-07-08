@@ -150,11 +150,13 @@ router.get("/getBook/:id", async (req, res) => {
     _id: book._id,
     name: book.name,
     authors: book.authors,
+    bookCondition: book.bookCondition,
     genres: book.genres,
     unitPrice: book.unitPrice,
     quantity: book.quantity,
     seller: book.sellerId.username,
-    tags: book.tags
+    tags: book.tags,
+    description: book.description
   });
 });
 
@@ -198,8 +200,10 @@ router.post("/", auth, async (req, res) => {
     quantity: req.body.quantity,
     unitPrice: req.body.unitPrice,
     authors: bookAuthors,
+    bookCondition: req.body.bookCondition,
     sellerId: req.user._id,
     tags: formattedTags,
+    description: req.body.description,
     location: req.body.location,
   });
 

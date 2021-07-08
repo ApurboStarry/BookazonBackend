@@ -33,7 +33,7 @@ const bookSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     min: 1,
-    max: 200,
+    max: 2000,
     required: true,
   },
   unitPrice: {
@@ -48,6 +48,10 @@ const bookSchema = new mongoose.Schema({
       ref: "Author",
     },
   ],
+  bookCondition: {
+    type: String,
+    required: true,
+  },
   sellerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -59,7 +63,10 @@ const bookSchema = new mongoose.Schema({
       max: 255,
     },
   ],
-  location: locationSchema
+  description: { 
+    type: String
+  },
+  location: locationSchema,
 });
 
 const Book = mongoose.model("Book", bookSchema);
@@ -76,7 +83,9 @@ function validateBook(book) {
     quantity: Joi.number().required(),
     unitPrice: Joi.number().required(),
     authors: Joi.array().items(Joi.string().min(3).max(255).required()),
+    bookCondition: Joi.string().valid("used", "unused").required(),
     tags: Joi.array().items(Joi.string().min(3).max(255)),
+    description: Joi.string(),
     location: locationSchema,
   });
 

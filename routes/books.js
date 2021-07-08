@@ -160,6 +160,15 @@ router.get("/getBook/:id", async (req, res) => {
   });
 });
 
+router.get("/giveaways", async (req, res) => {
+  const books = await Book.find({ unitPrice: 0 })
+    .limit(10)
+    .populate("genres", "_id name")
+    .populate("authors");
+
+  return res.send(books);
+});
+
 function formatTags(tags) {
   const formattedTags = [];
   for (let i = 0; i < tags.length; i++) {

@@ -38,7 +38,7 @@ const bookSchema = new mongoose.Schema({
   },
   unitPrice: {
     type: Number,
-    min: 1,
+    min: 0,
     max: 10000,
     required: true,
   },
@@ -85,7 +85,7 @@ function validateBook(book) {
     authors: Joi.array().items(Joi.string().min(3).max(255).required()),
     bookCondition: Joi.string().valid("used", "unused").required(),
     tags: Joi.array().items(Joi.string().min(3).max(255)),
-    description: Joi.string(),
+    description: Joi.string().allow(""),
     location: locationSchema,
   });
 

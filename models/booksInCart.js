@@ -15,15 +15,16 @@ const booksInCartSchema = new mongoose.Schema({
   },
   unitPrice: {
     type: Number,
-    min: 1,
+    min: 0,
     max: 10000,
     required: true,
   },
   totalAmount: {
     type: Number,
-    min: 1,
+    min: 0,
     required: true,
   },
+  images: [{ type: String }]
 });
 
 const BooksInCart = mongoose.model("BooksInCart", booksInCartSchema);
@@ -32,7 +33,7 @@ function validateBooksInCart(cart) {
   const schema = Joi.object({
     bookId: Joi.string().required(),
     quantity: Joi.number().min(1).max(200).required(),
-    unitPrice: Joi.number().min(1).max(10000).required(),
+    unitPrice: Joi.number().min(0).max(10000).required(),
   });
 
   return schema.validate(cart);

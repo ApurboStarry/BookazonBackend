@@ -17,6 +17,9 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  deliveryAddress: {
+    type: String
+  },
   buyerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -38,7 +41,8 @@ function validateTransaction(transaction) {
   const schema = Joi.object({
     totalAmount: Joi.number().min(1).required(),
     paymentMethod: Joi.string().required(),
-    deliveryType: Joi.string().required()
+    deliveryType: Joi.string().required(),
+    deliveryAddress: Joi.string().allow("")
   });
 
   return schema.validate(transaction);

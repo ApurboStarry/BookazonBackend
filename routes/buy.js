@@ -51,6 +51,7 @@ router.post("/", auth, async (req, res) => {
     totalAmount: req.body.totalAmount,
     paymentMethod: req.body.paymentMethod,
     deliveryType: req.body.deliveryType,
+    deliveryAddress: req.body.deliveryAddress,
     buyerId: req.user._id,
     transactionDate: Date.now(),
     transactionRating: 0

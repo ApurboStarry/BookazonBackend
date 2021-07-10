@@ -38,6 +38,7 @@ router.post("/addBook", auth, async (req, res) => {
     quantity: req.body.quantity,
     unitPrice: req.body.unitPrice,
     totalAmount: req.body.quantity * req.body.unitPrice,
+    images: book.images
   });
 
   booksInCart = await booksInCart.save();

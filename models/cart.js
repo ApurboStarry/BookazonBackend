@@ -16,7 +16,7 @@ function validateCart(cart) {
   const schema = Joi.object({
     bookId: Joi.string().required(),
     quantity: Joi.number().min(1).max(200).required(),
-    unitPrice: Joi.number().min(1).max(10000).required(),
+    unitPrice: Joi.number().min(0).max(10000).required(),
   });
 
   return schema.validate(cart);

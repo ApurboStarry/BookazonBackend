@@ -9,10 +9,9 @@ global.XMLHttpRequest = require("xhr2");
 let firebaseAPIKey = {};
 
 try {
-  const firebaseFile = config.get("firebaseFile");
+  const firebaseFile = process.env.bookazon_firebaseFile;
   const rawData = fs.readFileSync(firebaseFile);
   firebaseAPIKey = JSON.parse(rawData);
-  console.log(firebaseAPIKey);
 } catch(e) {
   console.log("FATAL ERROR: Could not connect to firebase");
   process.exit(1);

@@ -8,17 +8,21 @@ global.XMLHttpRequest = require("xhr2");
 
 let firebaseAPIKey = {};
 
-try {
-  const firebaseFile = process.env.bookazon_firebaseFile;
-  const rawData = fs.readFileSync(firebaseFile);
-  firebaseAPIKey = JSON.parse(rawData);
-} catch(e) {
+if(!process.env.apiKey) {
   console.log("FATAL ERROR: Could not connect to firebase");
   process.exit(1);
 }
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = firebaseAPIKey;
+const firebaseConfig = {
+  apiKey: process.env.apiKey,
+  authDomain: process.env.authDomain,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId,
+  measurementId: process.env.measurementId,
+};
 
 firebase.initializeApp(firebaseConfig);
 

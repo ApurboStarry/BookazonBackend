@@ -1,19 +1,25 @@
 const path = require("path");
 const firebase = require("firebase/app");
 const fs = require("fs");
+const config = require("config");
+
 require("firebase/storage");
 global.XMLHttpRequest = require("xhr2");
 
+let firebaseAPIKey = {};
+
+try {
+  const firebaseFile = config.get("firebaseFile");
+  const rawData = fs.readFileSync(firebaseFile);
+  firebaseAPIKey = JSON.parse(rawData);
+  console.log(firebaseAPIKey);
+} catch(e) {
+  console.log("FATAL ERROR: Could not connect to firebase");
+  process.exit(1);
+}
+
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDxRHp9EQokCZ25rTnO0Ked9o780x41Bxk",
-  authDomain: "bookazon-8266b.firebaseapp.com",
-  projectId: "bookazon-8266b",
-  storageBucket: "bookazon-8266b.appspot.com",
-  messagingSenderId: "653929796433",
-  appId: "1:653929796433:web:7467e79eca77fd586f7970",
-  measurementId: "G-6FS4Z298NW",
-};
+const firebaseConfig = firebaseAPIKey;
 
 firebase.initializeApp(firebaseConfig);
 

@@ -1,4 +1,5 @@
 {
   "jwtPrivateKey": "bookazon_jwtPrivateKey",
-  "db": "bookazon_db"
+  "db": "bookazon_db",
+  "firebaseFile": "bookazon_firebaseFile"
 }

@@ -150,7 +150,8 @@ router.get("/getBook/:id", async (req, res) => {
     quantity: book.quantity,
     seller: book.sellerId.username,
     tags: book.tags,
-    description: book.description
+    description: book.description,
+    images: book.images
   });
 });
 

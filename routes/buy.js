@@ -1,7 +1,12 @@
 const express = require("express");
 const auth = require("../middlewares/auth");
 
-const { Transaction, validate, validateTransactionForUpdation } = require("../models/transaction");
+const {
+  Transaction,
+  validate,
+  validateTransactionForUpdation,
+  validateTransactionReport,
+} = require("../models/transaction");
 const { Cart } = require("../models/cart");
 const { BooksInCart } = require("../models/booksInCart");
 const { Book } = require("../models/book");
@@ -62,6 +67,29 @@ router.post("/", auth, async (req, res) => {
   await Cart.findOneAndDelete({ ownerId: req.user._id });
 
   return res.send({ _id: transaction._id, totalAmount: transaction.totalAmount });
+});
+
+router.post("/report/:transactionId", auth, async (req, res) => {
+  const isValidId = isValidObjectId(req.params.transactionId);
+  if (!isValidId) return res.status(400).send("Invalid ID");
+
+  if(!req.body.transactionReportText || req.body.transactionReportText === "") {
+    return res.status(400).send("Invalid request body")
+  }
+
+  const transaction = await Transaction.findOneAndUpdate(
+    {
+      _id: req.params.transactionId
+    }, 
+    {
+      transactionReportText: req.body.transactionReportText
+    }, 
+    {
+      new: true
+    }
+  );
+
+  return res.send(transaction);
 });
 
 router.put("/rate/:transactionId", auth, async (req, res) => {

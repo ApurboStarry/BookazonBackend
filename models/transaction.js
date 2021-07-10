@@ -33,6 +33,9 @@ const transactionSchema = new mongoose.Schema({
     min: 0,
     max: 5,
   },
+  transactionReportText: {
+    type: String
+  }
 });
 
 const Transaction = mongoose.model("Transaction", transactionSchema);
@@ -56,6 +59,15 @@ function validateTransactionForUpdation(transaction) {
   return schema.validate(transaction);
 }
 
+function validateTransactionReport(transaction) {
+  const schema = Joi.object({
+    transactionReportText: Joi.string().required()
+  });
+
+  return schema.valid(transaction);
+}
+
 module.exports.Transaction = Transaction;
 module.exports.validate = validateTransaction;
 module.exports.validateTransactionForUpdation = validateTransactionForUpdation;
+module.exports.validateTransactionReport = validateTransactionReport;

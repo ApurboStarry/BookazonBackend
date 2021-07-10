@@ -66,6 +66,7 @@ const bookSchema = new mongoose.Schema({
   description: { 
     type: String
   },
+  images: [{ type: String }],
   location: locationSchema,
 });
 

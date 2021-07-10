@@ -5,6 +5,9 @@ const { Book, validate, validateBookForUpdation } = require("../models/book");
 const authorService = require("../services/authorService");
 const auth = require("../middlewares/auth");
 
+const upload = require("../fileUploadService/multerFileUploadHandler");
+const uploadToFirebase = require("../fileUploadService/firebaseUpload");
+
 const router = express.Router();
 
 const pageSize = 5;
@@ -21,15 +24,6 @@ async function getNumberOfPages() {
 
   return numberOfPages;
 }
-
-// router.get("/", async (req, res) => {
-//   const books = await Book.find({ })
-//     .sort("name")
-//     .limit(20)
-//     .select("-__v");
-
-//   res.send(books);
-// });
 
 router.get("/", async (req, res) => {
   const pageNumber = req.query.pageNumber;
@@ -219,6 +213,48 @@ router.post("/", auth, async (req, res) => {
   book = await book.save();
 
   res.send({ _id: book._id, name: book.name });
+});
+
+router.post("/uploadFiles/:bookId", auth, async (req, res) => {
+  const isValidId = isValidObjectId(req.params.bookId);
+  if (!isValidId) return res.status(400).send("Invalid ID");
+
+  const book = await Book.findOne({ _id: req.params.bookId });
+
+  if (!book) {
+    return res.status(404).send("No book with the given ID was found");
+  }
+
+  upload(req, res, async function(err){
+    if(err) {
+      return res.status(500).send("Sorry, something went wrong on our side");
+    }
+
+    // concurrent requests
+    const requests = req.files.map((file) =>
+      uploadToFirebase(req.user._id, req.params.bookId, file)
+    );
+
+    try {
+      const fileLocations = await Promise.all(requests);
+
+      const book = await Book.findOneAndUpdate(
+        {
+          _id: req.params.bookId,
+        },
+        {
+          images: fileLocations
+        },
+        {
+          new: true,
+        }
+      );
+
+      return res.send(book);
+    } catch(err) {
+      return res.status(500).send("Sorry, something went wrong on our side");
+    }
+  })
 });
 
 router.put("/:id", auth, async (req, res) => {

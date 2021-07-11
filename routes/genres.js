@@ -176,7 +176,7 @@ router.delete("/:id", auth, async (req, res) => {
 async function isAdmin(userId) {
   // check if the requesting user is an admin
   const user = await User.findOne({ _id: userId });
-  if (!user.isAdmin) {
+  if (!user || !user.isAdmin) {
     return false;
   }
 

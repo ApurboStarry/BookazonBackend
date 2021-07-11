@@ -61,7 +61,8 @@ router.post("/advancedSearch", async (req, res) => {
 
   let books = await Book.find({ authors: { $in: authorIds } })
     .populate("authors", "name -_id")
-    .populate("sellerId", "_id username");
+    .populate("sellerId", "_id username")
+    .populate("genres", "_id name");
 
   books = books.filter((book) => {
     return (

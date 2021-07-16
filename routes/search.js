@@ -35,11 +35,25 @@ function distanceFrom(location1, location2) {
 
 router.get("/byName/:name", async (req, res) => {
   // const regExp = new RegExp(".*")
-  const books = await Book.find({
+  let books = await Book.find({
     name: { $regex: req.params.name, $options: "i" },
   })
     .populate("authors", "name _id")
     .populate("genres", "_id name");
+
+  if (req.query.latitude && req.query.longitude) {
+    const searchLocation = {
+      latitude: req.query.latitude,
+      longitude: req.query.longitude,
+    };
+
+    books = books.sort(
+      (book1, book2) =>
+        distanceFrom(book1.location, searchLocation) -
+        distanceFrom(book2.location, searchLocation)
+    );
+  }
+
   res.send(books);
 });
 

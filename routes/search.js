@@ -145,7 +145,9 @@ router.post("/advancedSearch", async (req, res) => {
 
   for(let i = 0; i < req.body.genres.length; i++) {
     if(req.body.genres[i] !== "") {
-      books = books.filter(book => book.genres.includes(req.body.genres[i]));
+      books = books.filter(book => book.genres.some(genre => { 
+        return genre._id == req.body.genres[i];
+      }));
     }
   }
 
@@ -153,6 +155,19 @@ router.post("/advancedSearch", async (req, res) => {
     for (let i = 0; i < req.body.tags.length; i++) {
       books = books.filter((book) => book.tags.includes(req.body.tags[i]));
     }
+  }
+
+  if (req.query.latitude && req.query.longitude) {
+    const searchLocation = {
+      latitude: req.query.latitude,
+      longitude: req.query.longitude,
+    };
+
+    books = books.sort(
+      (book1, book2) =>
+        distanceFrom(book1.location, searchLocation) -
+        distanceFrom(book2.location, searchLocation)
+    );
   }
 
   return res.send(books);

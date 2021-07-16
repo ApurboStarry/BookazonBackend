@@ -4,6 +4,35 @@ const { Book } = require("../models/book");
 
 const router = express.Router();
 
+function distanceFrom(location1, location2) {
+  let lat1 = location1.latitude;
+  let lon1 = location1.longitude;
+
+  let lat2 = location2.latitude;
+  let lon2 = location2.longitude;
+
+  lon1 = (lon1 * Math.PI) / 180;
+  lon2 = (lon2 * Math.PI) / 180;
+  lat1 = (lat1 * Math.PI) / 180;
+  lat2 = (lat2 * Math.PI) / 180;
+
+  // Haversine formula
+  let dlon = lon2 - lon1;
+  let dlat = lat2 - lat1;
+  let a =
+    Math.pow(Math.sin(dlat / 2), 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon / 2), 2);
+
+  let c = 2 * Math.asin(Math.sqrt(a));
+
+  // Radius of earth in kilometers. Use 3956
+  // for miles
+  let r = 6371;
+
+  // calculate the result
+  return c * r;
+}
+
 router.get("/byName/:name", async (req, res) => {
   // const regExp = new RegExp(".*")
   const books = await Book.find({
@@ -15,10 +44,24 @@ router.get("/byName/:name", async (req, res) => {
 });
 
 router.get("/byGenre/:genreId", async (req, res) => {
-  const books = await Book.find({ genres: { $in: [req.params.genreId] } })
+  let books = await Book.find({ genres: { $in: [req.params.genreId] } })
     .populate("genres", "_id name")
     .populate("authors", "name -_id")
     .limit(10);
+
+  if(req.query.latitude && req.query.longitude) {
+    const searchLocation = {
+      latitude: req.query.latitude,
+      longitude: req.query.longitude,
+    };
+
+    books = books.sort(
+      (book1, book2) =>
+        distanceFrom(book1.location, searchLocation) -
+        distanceFrom(book2.location, searchLocation)
+    );
+  }
+
   res.send(books);
 });
 
@@ -30,9 +73,23 @@ router.get("/byAuthor/:authorId", async (req, res) => {
   const isValidId = isValidObjectId(req.params.authorId);
   if (!isValidId) return res.status(400).send("Invalid ID");
 
-  const books = await Book.find({ authors: req.params.authorId })
+  let books = await Book.find({ authors: req.params.authorId })
     .populate("authors", "name")
     .populate("genres", "_id name");
+
+  if (req.query.latitude && req.query.longitude) {
+    const searchLocation = {
+      latitude: req.query.latitude,
+      longitude: req.query.longitude,
+    };
+
+    books = books.sort(
+      (book1, book2) =>
+        distanceFrom(book1.location, searchLocation) -
+        distanceFrom(book2.location, searchLocation)
+    );
+  }
+
   res.send(books);
 });
 

@@ -37,8 +37,7 @@ router.get("/", async (req, res) => {
     .limit(pageSize)
     .populate("authors", "name")
     .populate("genres", "_id name")
-    .populate("sellerId", "_id username")
-    .sort({ name: -1 });
+    .populate("sellerId", "_id username");
 
   res.send(books);
 });
@@ -114,7 +113,9 @@ router.get("/sortBy/location", async (req, res) => {
     longitude: req.query.longitude,
   };
 
-  let books = await Book.find();
+  let books = await Book.find()
+    .populate("authors", "name")
+    .populate("genres", "name -_id");
   books = books.sort(
     (book1, book2) =>
       distanceFrom(book1.location, searchLocation) -

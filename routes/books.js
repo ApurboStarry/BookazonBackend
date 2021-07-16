@@ -33,11 +33,12 @@ router.get("/", async (req, res) => {
   }
 
   const books = await Book.find()
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize)
     .populate("authors", "name")
     .populate("genres", "_id name")
     .populate("sellerId", "_id username")
-    .skip((pageNumber - 1) * pageSize)
-    .limit(pageSize);
+    .sort({ name: -1 });
 
   res.send(books);
 });
@@ -45,11 +46,11 @@ router.get("/", async (req, res) => {
 router.get("/sortBy/name", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
   const books = await Book.find()
+    .limit(10)
+    .sort({ name: state })
     .populate("authors", "name")
     .populate("genres", "_id name")
-    .populate("sellerId", "_id username")
-    .sort({ name: state })
-    .limit(10);
+    .populate("sellerId", "_id username");
 
   res.send(books);
 });
@@ -57,11 +58,11 @@ router.get("/sortBy/name", async (req, res) => {
 router.get("/sortBy/unitPrice", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
   const books = await Book.find()
+    .limit(10)
+    .sort({ unitPrice: state })
     .populate("authors", "name")
     .populate("genres", "_id name")
-    .populate("sellerId", "_id username")
-    .sort({ unitPrice: state })
-    .limit(10);
+    .populate("sellerId", "_id username");
 
   res.send(books);
 });
@@ -69,11 +70,11 @@ router.get("/sortBy/unitPrice", async (req, res) => {
 router.get("/sortBy/genre", async (req, res) => {
   const state = req.query.order === "ascending" ? 1 : -1;
   const books = await Book.find()
+    .limit(10)
+    .sort({ genres: state })
     .populate("authors", "name")
     .populate("genres", "name -_id")
-    .populate("sellerId", "_id username")
-    .sort({ genres: state })
-    .limit(10);
+    .populate("sellerId", "_id username");
 
   res.send(books);
 });

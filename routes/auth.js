@@ -4,7 +4,14 @@ const { User } = require("../models/user");
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const express = require("express");
+const auth = require("../middlewares/auth");
+
 const router = express.Router();
+
+router.get("/isAdmin", auth, async (req, res) => {
+  const user = await User.findOne({ _id: req.user._id });
+  return res.send(user.isAdmin);
+})
 
 // for login
 router.post("/", async (req, res) => {

@@ -78,7 +78,7 @@ router.post("/", auth, async (req, res) => {
 
   genre = await genre.save();
 
-  res.send({ _id: genre._id });
+  res.send(genre);
 });
 
 router.post("/addChild/:id", auth, async (req, res) => {
@@ -112,7 +112,7 @@ router.post("/addChild/:id", auth, async (req, res) => {
   genre.children.push(newGenre._id);
   genre = await genre.save();
 
-  return res.send(genre);
+  return res.send(newGenre);
 })
 
 router.put("/:id", auth, async (req, res) => {
@@ -170,6 +170,54 @@ router.delete("/:id", auth, async (req, res) => {
   res.send({
     _id: genre._id,
     name: genre.name
+  });
+});
+
+router.delete("/:parentId/:childId", auth, async (req, res) => {
+  let isValidId = isValidObjectId(req.params.parentId);
+  if (!isValidId) return res.status(400).send("Invalid ID");
+
+  isValidId = isValidObjectId(req.params.childId);
+  if (!isValidId) return res.status(400).send("Invalid ID");
+
+  // check user is an admin
+  const isUserAnAdmin = await isAdmin(req.user._id);
+  if (!isUserAnAdmin) {
+    return res.status(401).send("Unauthorized to access");
+  }
+
+  // delete genre from the parent's children list
+  let parentGenre = await Genre.findOne({ _id: req.params.parentId });
+  if(!parentGenre) {
+    return res.status(400).send("No parent genre found");
+  }
+
+  let childGenreIndex = -1;
+  for(let i = 0; i < parentGenre.children.length; i++) {
+    if(parentGenre.children[i] == req.params.childId) {
+      childGenreIndex = i;
+    }
+  }
+  parentGenre.children.splice(childGenreIndex, 1);
+  await Genre.findOneAndUpdate(
+    { _id: req.params.parentId },
+    { children: parentGenre.children },
+    { new: true }
+  );
+
+  // delete the actual genre
+  let genre = await Genre.findOne({
+    _id: req.params.childId,
+  });
+  if (!genre) {
+    return res.status(400).send("No genre with the given ID was found");
+  }
+
+  genre = await Genre.findOneAndRemove({ _id: req.params.childId });
+  
+  return res.send({
+    _id: genre._id,
+    name: genre.name,
   });
 });
 
